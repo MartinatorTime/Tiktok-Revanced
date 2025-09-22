@@ -1,0 +1,60 @@
+name: Patch APK with ReVanced
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: 'URL to APK file from APKMirror (e.g., https://www.apkmirror.com/...&forcebaseapk=true)'
+        required: true
+
+jobs:
+  patch-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository (optional, if you need other files from your repo)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install Java (required for ReVanced CLI)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Download APK from provided URL
+      - name: Download APK
+        run: |
+          curl -L "${{ github.event.inputs.apk_url }}" -o app.apk
+
+      # Download latest ReVanced CLI
+      - name: Download ReVanced CLI
+        run: |
+          CLI_URL=$(curl -s https://api.github.com/repos/ReVanced/revanced-cli/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
+          curl -L "$CLI_URL" -o revanced-cli.jar
+
+      # Download latest ReVanced patches from your repository
+      - name: Download ReVanced Patches
+        run: |
+          PATCHES_URL=$(curl -s https://api.github.com/repos/krolchonok/revances_patches/releases/latest | jq -r '.assets[] | select(.name | endswith(".rvp")) | .browser_download_url')
+          curl -L "$PATCHES_URL" -o patches.rvp
+
+      # Patch APK using ReVanced CLI
+      - name: Patch APK
+        run: |
+          java -jar revanced-cli.jar patch -f -p patches.rvp \
+            --exclusive \
+            -e "Downloads" \
+            -e "SIM spoof" \
+            -e "Fix Google login" \
+            -e "Disable login requirement" \
+            -e "Show seekbar" \
+            app.apk
+
+      # Upload patched APK as artifact
+      - name: Upload Patched APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: patched-apk
+          path: patched*.apk
