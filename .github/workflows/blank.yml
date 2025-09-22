@@ -3,9 +3,18 @@ name: Patch APK with ReVanced
 on:
   workflow_dispatch:
     inputs:
-      apk_url:
-        description: 'URL to APK file from APKMirror (e.g., https://www.apkmirror.com/...&forcebaseapk=true)'
+      org:
+        description: 'Developer org on APKMirror (e.g., tiktok-pte-ltd for TikTok)'
         required: true
+        default: 'tiktok-pte-ltd'
+      repo:
+        description: 'App repo on APKMirror (e.g., tik-tok for TikTok)'
+        required: true
+        default: 'tik-tok'
+      version:
+        description: 'App version (e.g., 41.7.3; leave empty for latest)'
+        required: false
+        default: ''
 
 jobs:
   patch-apk:
@@ -23,10 +32,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Download APK from provided URL
-      - name: Download APK
+      # Download APK using gh-apkmirror-dl action
+      - name: Download APK from APKMirror
+        id: download
+        uses: Yakov5776/gh-apkmirror-dl@v1.3
+        with:
+          org: ${{ github.event.inputs.org }}
+          repo: ${{ github.event.inputs.repo }}
+          version: ${{ github.event.inputs.version }}
+          bundle: false  # Download APK, not bundle
+          filename: app.apk  # Output name
+
+      # Verify download (optional, for safety)
+      - name: Verify APK
         run: |
-          curl -L "${{ github.event.inputs.apk_url }}" -o app.apk
+          APK_SIZE=$(stat -c%s app.apk)
+          if [ "$APK_SIZE" -lt 10000000 ]; then
+            echo "Error: Downloaded file too small ($APK_SIZE bytes), not a real APK."
+            exit 1
+          fi
+          echo "APK downloaded successfully: $APK_SIZE bytes"
 
       # Download latest ReVanced CLI
       - name: Download ReVanced CLI
@@ -37,7 +62,7 @@ jobs:
       # Download latest ReVanced patches from your repository
       - name: Download ReVanced Patches
         run: |
-          PATCHES_URL=$(curl -s https://api.github.com/repos/krolchonok/revanced-patches/releases/latest | jq -r '.assets[] | select(.name | endswith(".rvp")) | .browser_download_url')
+          PATCHES_URL=$(curl -s https://api.github.com/repos/krolchonok/revances_patches/releases/latest | jq -r '.assets[] | select(.name | endswith(".rvp")) | .browser_download_url')
           curl -L "$PATCHES_URL" -o patches.rvp
 
       # Patch APK using ReVanced CLI
