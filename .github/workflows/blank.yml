@@ -3,17 +3,9 @@ name: Patch APK with ReVanced
 on:
   workflow_dispatch:
     inputs:
-      org:
-        description: 'Developer org on APKMirror (e.g., tiktok-pte-ltd for TikTok)'
+      url:
+        description: 'Прямая ссылка на APK (будет скачано в app.apk)'
         required: true
-        default: 'tiktok-pte-ltd'
-      repo:
-        description: 'App repo on APKMirror (e.g., tik-tok for TikTok)'
-        required: true
-        default: 'tik-tok'
-      version:
-        description: 'App version (e.g., 41.7.3; leave empty for latest)'
-        required: false
         default: ''
 
 jobs:
@@ -21,29 +13,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository (optional, if you need other files from your repo)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Install Java (required for ReVanced CLI)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Download APK using gh-apkmirror-dl action
-      - name: Download APK from APKMirror
-        id: download
-        uses: Yakov5776/gh-apkmirror-dl@v1.3
-        with:
-          org: ${{ github.event.inputs.org }}
-          repo: ${{ github.event.inputs.repo }}
-          version: ${{ github.event.inputs.version }}
-          bundle: false  # Download APK, not bundle
-          filename: app.apk  # Output name
+      - name: Ensure tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl wget
 
-      # Verify download (optional, for safety)
+      - name: Download APK with wget
+        run: |
+          if [ -z "${{ github.event.inputs.url }}" ]; then
+            echo "Error: Не указана ссылка на APK (input 'url')."
+            exit 1
+          fi
+          wget -L -O app.apk "${{ github.event.inputs.url }}"
+
       - name: Verify APK
         run: |
           APK_SIZE=$(stat -c%s app.apk)
@@ -53,19 +44,16 @@ jobs:
           fi
           echo "APK downloaded successfully: $APK_SIZE bytes"
 
-      # Download latest ReVanced CLI
       - name: Download ReVanced CLI
         run: |
           CLI_URL=$(curl -s https://api.github.com/repos/ReVanced/revanced-cli/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
           curl -L "$CLI_URL" -o revanced-cli.jar
 
-      # Download latest ReVanced patches from your repository
       - name: Download ReVanced Patches
         run: |
           PATCHES_URL=$(curl -s https://api.github.com/repos/krolchonok/revances_patches/releases/latest | jq -r '.assets[] | select(.name | endswith(".rvp")) | .browser_download_url')
           curl -L "$PATCHES_URL" -o patches.rvp
 
-      # Patch APK using ReVanced CLI
       - name: Patch APK
         run: |
           java -jar revanced-cli.jar patch -f -p patches.rvp \
@@ -77,7 +65,6 @@ jobs:
             -e "Show seekbar" \
             app.apk
 
-      # Upload patched APK as artifact
       - name: Upload Patched APK
         uses: actions/upload-artifact@v4
         with:
