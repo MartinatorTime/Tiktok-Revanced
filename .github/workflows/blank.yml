@@ -51,7 +51,7 @@ jobs:
 
       - name: Download ReVanced Patches
         run: |
-          PATCHES_URL=$(curl -s https://api.github.com/repos/krolchonok/revances_patches/releases/latest | jq -r '.assets[] | select(.name | endswith(".rvp")) | .browser_download_url')
+          PATCHES_URL=$(curl -s https://api.github.com/repos/krolchonok/revanced-patches/releases/latest | jq -r '.assets[] | select(.name | endswith(".rvp")) | .browser_download_url')
           curl -L "$PATCHES_URL" -o patches.rvp
 
       - name: Patch APK
