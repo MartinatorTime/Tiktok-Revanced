@@ -66,11 +66,23 @@ jobs:
             app.apk
 
       - name: Rename output
-        run: mv -v app-patched.apk titkok-app.apk
+        run: mv -v app-patched.apk titkok-app-patched.apk
 
       - name: Upload Patched APK
         uses: actions/upload-artifact@v4
         with:
-          name: titkok-app
-          path: titkok-app.apk
+          name: titkok-app-patched.apk
+          path: titkok-app-patched.apk
 
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: titkok-${{ github.run_number }}
+          name: "Titkok Patched APK ${{ github.run_number }}"
+          body: "Автоматически собранный APK с помощью ReVanced."
+          draft: false
+          prerelease: false
+          files: titkok-app-patched.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
