@@ -83,6 +83,6 @@ jobs:
           body: "Автоматически собранный APK с помощью ReVanced."
           draft: false
           prerelease: false
-          files: titkok-app-patched.apk
+          files: tiktok-app-patched.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
