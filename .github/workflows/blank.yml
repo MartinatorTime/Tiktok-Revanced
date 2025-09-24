@@ -11,6 +11,8 @@ on:
 jobs:
   patch-apk:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -73,4 +75,28 @@ jobs:
         with:
           name: titkok-app
           path: titkok-app.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: auto-${{ github.run_number }}-${{ github.run_id }}
+          name: "TikTok Patched APK - Auto Release ${{ github.run_number }}"
+          body: |
+            🚀 Автоматически созданный релиз с пропатченным TikTok APK
+            
+            **Информация о релизе:**
+            - Исходный APK: ${{ github.event.inputs.url }}
+            - Дата создания: ${{ github.event.head_commit.timestamp }}
+            - Workflow Run: ${{ github.run_number }}
+            - Commit: ${{ github.sha }}
+            
+            **Установка:**
+            1. Скачайте `titkok-app.apk`
+            2. Разрешите установку из неизвестных источников
+            3. Установите APK файл
+          files: titkok-app.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
