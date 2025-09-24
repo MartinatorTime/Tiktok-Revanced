@@ -65,12 +65,12 @@ jobs:
             -e "Show seekbar" \
             app.apk
 
-      - name: List files after patch
-        run: ls -lh
+      - name: Rename output
+        run: mv -v app-patched.apk titkok-app.apk
 
       - name: Upload Patched APK
         uses: actions/upload-artifact@v4
         with:
           name: titkok-app
-          path: "*.apk"
+          path: titkok-app.apk
 
