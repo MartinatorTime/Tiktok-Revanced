@@ -68,5 +68,5 @@ jobs:
       - name: Upload Patched APK
         uses: actions/upload-artifact@v4
         with:
-          name: patched-apk
-          path: patched*.apk
+          name: titkok-app.apk
+          path: "*.patched.apk"
