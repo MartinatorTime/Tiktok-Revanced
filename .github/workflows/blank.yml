@@ -96,12 +96,16 @@ jobs:
             -e "Fix Google login" \
             -e "Disable login requirement" \
             -e "Show seekbar" \
+            -e "Spoof SIM country" \
+            -e "Remove screen capture restriction" \
+            -e "Remove share targets" \
             app.apk
 
       - name: Rename output
         run: mv -v app-patched.apk titkok-app-patched.apk
 
       - name: Create Release Info
+        id: release_info
         run: |
           curl -sSL https://dl.google.com/android/repository/build-tools_r33.0.2-linux.zip -o build-tools.zip
           unzip -q build-tools.zip -d build-tools
@@ -118,6 +122,7 @@ jobs:
           echo "- Tiktok - $TikTok_Version" >> release_body.txt
           echo "" >> release_body.txt
           echo "Patched at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> release_body.txt
+          echo "tiktok_version=$TikTok_Version" >> "$GITHUB_OUTPUT" # Set TikTok_Version as an output
         shell: bash
 
       - name: Upload Release
@@ -126,7 +131,7 @@ jobs:
         with:
           files: |
             titkok-app-patched.apk
-          tag_name: titkok-$TikTok_Version
+          tag_name: titkok-${{ steps.release_info.outputs.tiktok_version }}
           draft: false
           body_path: release_body.txt
         env:
