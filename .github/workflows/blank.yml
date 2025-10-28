@@ -96,9 +96,7 @@ jobs:
             -e "Fix Google login" \
             -e "Disable login requirement" \
             -e "Show seekbar" \
-            -e "Spoof SIM country" \
             -e "Remove screen capture restriction" \
-            -e "Remove share targets" \
             app.apk
 
       - name: Rename output
