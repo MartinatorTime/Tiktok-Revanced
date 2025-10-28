@@ -92,7 +92,6 @@ jobs:
           java -jar revanced-cli.jar patch -f -p patches.rvp \
             --exclusive \
             -e "Downloads" \
-            -e "SIM spoof" \
             -e "Fix Google login" \
             -e "Disable login requirement" \
             -e "Show seekbar" \
