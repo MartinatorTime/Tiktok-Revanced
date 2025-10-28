@@ -96,7 +96,6 @@ jobs:
             -e "Fix Google login" \
             -e "Disable login requirement" \
             -e "Show seekbar" \
-            -e "Remove screen capture restriction" \
             app.apk
 
       - name: Rename output
